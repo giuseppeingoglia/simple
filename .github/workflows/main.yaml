@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Cache ORAS binary
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.local/bin/oras
         key: ${{ runner.os }}-oras
@@ -43,7 +43,7 @@ jobs:
 
     - name: Install Trivy
       run: |
-        sudo apt-get install -y trivy
+        sudo apt update && sudo apt install -y trivy
 
     - name: Build Docker Image
       run: |
