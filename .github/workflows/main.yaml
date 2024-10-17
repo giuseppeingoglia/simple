@@ -22,6 +22,7 @@ jobs:
     - name: Install ORAS
       run: |
         if ! command -v oras &> /dev/null; then
+          mkdir -p ~/.local/bin  # Ensure the directory exists
           curl -sSL https://github.com/deislabs/oras/releases/latest/download/oras_Linux_x86_64.tar.gz | tar xz -C ~/.local/bin
         fi
 
@@ -30,6 +31,10 @@ jobs:
       with:
         path: ~/.cache/trivy/db
         key: ${{ runner.os }}-trivy-db-${{ hashFiles('~/.cache/trivy/db/metadata.json') }}
+      
+    - name: Prepare Trivy DB Directory
+      run: |
+        mkdir -p ~/.cache/trivy/db  # Ensure the cache directory exists
 
     - name: Download Trivy DB
       run: |
@@ -37,7 +42,6 @@ jobs:
         if [ ! -f ~/.cache/trivy/db/trivy.db ]; then
           oras pull ghcr.io/aquasecurity/trivy-db:2
           tar -xzf db.tar.gz
-          mkdir -p ~/.cache/trivy/db
           cp trivy.db metadata.json ~/.cache/trivy/db/
         fi
 
