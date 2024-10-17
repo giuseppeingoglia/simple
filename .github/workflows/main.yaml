@@ -1,1 +1,54 @@
+name: CI
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Cache ORAS binary
+      uses: actions/cache@v2
+      with:
+        path: ~/.local/bin/oras
+        key: ${{ runner.os }}-oras
+
+    - name: Install ORAS
+      run: |
+        if ! command -v oras &> /dev/null; then
+          curl -sSL https://github.com/deislabs/oras/releases/latest/download/oras_Linux_x86_64.tar.gz | tar xz -C ~/.local/bin
+        fi
+
+    - name: Cache Trivy DB
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/trivy/db
+        key: ${{ runner.os }}-trivy-db-${{ hashFiles('~/.cache/trivy/db/metadata.json') }}
+
+    - name: Download Trivy DB
+      run: |
+        # Check if the database is not in cache and download it if necessary
+        if [ ! -f ~/.cache/trivy/db/trivy.db ]; then
+          oras pull ghcr.io/aquasecurity/trivy-db:2
+          tar -xzf db.tar.gz
+          mkdir -p ~/.cache/trivy/db
+          cp trivy.db metadata.json ~/.cache/trivy/db/
+        fi
+
+    - name: Install Trivy
+      run: |
+        sudo apt-get install -y trivy
+
+    - name: Build Docker Image
+      run: |
+        docker pull ubuntu:latest
+
+    - name: Scan Docker Image with Trivy
+      run: |
+        trivy image --skip-db-update ubuntu:latest
