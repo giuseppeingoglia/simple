@@ -13,18 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Cache ORAS binary
-      uses: actions/cache@v3
-      with:
-        path: ~/.local/bin/oras
-        key: ${{ runner.os }}-oras
-
     - name: Install ORAS
       run: |
         if ! command -v oras &> /dev/null; then
           mkdir -p ~/.local/bin  # Ensure the directory exists
           curl -sSL https://github.com/deislabs/oras/releases/latest/download/oras_Linux_x86_64.tar.gz | tar xz -C ~/.local/bin
         fi
+
+    - name: Cache ORAS binary
+      uses: actions/cache@v3
+      with:
+        path: ~/.local/bin/oras
+        key: ${{ runner.os }}-oras
 
     - name: Prepare Trivy DB Directory
       run: |
